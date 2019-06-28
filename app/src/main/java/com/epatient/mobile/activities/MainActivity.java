@@ -62,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
 
 
-    private static final int INTERVAL_SEC = 15;
+    private static final int INTERVAL_SEC = 30;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -226,7 +226,9 @@ public class MainActivity extends AppCompatActivity {
     };
 
     void processHeartRateResponse(byte[] bytes) {
-        HeartRateMeasurement heartRateData = new HeartRateMeasurement(HeartRateUtil.extractHeartRate(bytes), LocalDateTime.now());
+        HeartRateMeasurement heartRateData = new HeartRateMeasurement();
+        heartRateData.setHeartRate(HeartRateUtil.extractHeartRate(bytes));
+        heartRateData.setTimestamp(LocalDateTime.now());
         runOnUiThread(() -> txtByte.setText(String.format("%d bpm", heartRateData.getHeartRate())));
 
         patientService.sendMeasurement(token, heartRateData).subscribeOn(Schedulers.io())

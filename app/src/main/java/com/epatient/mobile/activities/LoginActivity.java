@@ -71,8 +71,10 @@ public class LoginActivity extends AppCompatActivity {
                         .build())
                 .build();
         PatientService patientService = retrofit.create(PatientService.class);
-
-        patientService.login(new AuthenticationRequest(usernameText.getText().toString().trim(), passwordText.getText().toString().trim()))
+        AuthenticationRequest authRequest = new AuthenticationRequest();
+        authRequest.setUsername(usernameText.getText().toString().trim());
+        authRequest.setPassword(passwordText.getText().toString().trim());
+        patientService.login(authRequest)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new SingleObserver<AuthenticationResponse>() {
