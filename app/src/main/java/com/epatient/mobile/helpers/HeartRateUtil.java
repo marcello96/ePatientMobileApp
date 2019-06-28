@@ -7,6 +7,6 @@ public class HeartRateUtil {
     }
 
     public static byte[] getHealthRateWriteBytes() {
-        return new byte[]{21, 2, 1};
+        return new byte[] {21, 2, 1};
     }
 }

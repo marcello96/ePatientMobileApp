@@ -2,8 +2,6 @@ package com.epatient.mobile.model;
 
 import com.google.gson.annotations.Expose;
 
-import org.joda.time.LocalDateTime;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,9 +9,15 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class HeartRateMeasurement {
+public class AccountCreationRequest {
     @Expose
-    private int heartRate;
+    private String username;
     @Expose
-    private LocalDateTime timestamp;
+    private String password;
+    @Expose
+    private String firstname;
+    @Expose
+    private String lastname;
+    @Expose
+    private int age;
 }

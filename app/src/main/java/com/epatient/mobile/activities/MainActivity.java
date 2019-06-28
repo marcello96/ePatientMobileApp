@@ -1,6 +1,5 @@
 package com.epatient.mobile.activities;
 
-import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
@@ -9,14 +8,18 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothProfile;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.epatient.mobile.R;
+import com.epatient.mobile.global.AuthenticationApplication;
+import com.epatient.mobile.helpers.CustomBluetoothProfile;
 import com.epatient.mobile.helpers.HeartRateUtil;
 import com.epatient.mobile.model.HeartRateMeasurement;
-import com.epatient.mobile.helpers.CustomBluetoothProfile;
+import com.epatient.mobile.service.PatientService;
 
 import net.danlew.android.joda.JodaTimeAndroid;
 
@@ -26,7 +29,18 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class MainActivity extends Activity {
+import io.reactivex.SingleObserver;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
+import okhttp3.OkHttpClient;
+import okhttp3.ResponseBody;
+import retrofit2.Retrofit;
+import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
+import retrofit2.converter.gson.GsonConverterFactory;
+
+public class MainActivity extends AppCompatActivity {
 
     boolean isListeningHeartRate = false;
 
@@ -43,7 +57,12 @@ public class MainActivity extends Activity {
     private String mDeviceAddress;
     private Timer hrScheduler;
 
-    private static final int INTERVAL_SEC = 30;
+    private String token;
+    private PatientService patientService;
+    private CompositeDisposable compositeDisposable = new CompositeDisposable();
+
+
+    private static final int INTERVAL_SEC = 15;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +75,30 @@ public class MainActivity extends Activity {
         initializeEvents();
 
         getBoundedDevice();
+
+        initializeRetrofit();
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (!compositeDisposable.isDisposed()) {
+            compositeDisposable.dispose();
+        }
+        super.onDestroy();
+    }
+
+    private void initializeRetrofit() {
+        AuthenticationApplication authApp = (AuthenticationApplication) getApplication();
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(authApp.getServerAddress())
+                .addConverterFactory(GsonConverterFactory.create())
+                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+                .client(new OkHttpClient.Builder()
+                        .retryOnConnectionFailure(false)
+                        .build())
+                .build();
+        patientService = retrofit.create(PatientService.class);
+        token = "Bearer " + authApp.getToken();
     }
 
     void getBoundedDevice() {
@@ -183,8 +226,32 @@ public class MainActivity extends Activity {
     };
 
     void processHeartRateResponse(byte[] bytes) {
-        // TODO collect heart rate
         HeartRateMeasurement heartRateData = new HeartRateMeasurement(HeartRateUtil.extractHeartRate(bytes), LocalDateTime.now());
-        runOnUiThread(() -> txtByte.setText(String.format("%d bpm", heartRateData.getValue())));
+        runOnUiThread(() -> txtByte.setText(String.format("%d bpm", heartRateData.getHeartRate())));
+
+        patientService.sendMeasurement(token, heartRateData).subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new SingleObserver<ResponseBody>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                        compositeDisposable.add(d);
+                    }
+
+                    @Override
+                    public void onSuccess(ResponseBody responseBody) {
+                        responseBody.close();
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        handleError(e);
+                    }
+                });
+
+    }
+
+    private void handleError(Throwable e) {
+        System.out.println("error: "+ e);
+        Toast.makeText(this, "Problem with Internet connection", Toast.LENGTH_LONG).show();
     }
 }

@@ -23,4 +23,10 @@
     <string name="menu_disconnect">Disconnect</string>
     <string name="menu_scan">Scan</string>
     <string name="menu_stop">Stop</string>
+
+    <string name="label_header">ePatient</string>
+    <string name="label_username">Username:</string>
+    <string name="label_password">Password:</string>
+    <string name="label_server_address">Server address:</string>
+    <string name="label_sign_in">Sign in</string>
 </resources>

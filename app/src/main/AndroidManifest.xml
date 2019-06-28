@@ -11,6 +11,7 @@
         android:required="true" />
 
     <application
+        android:name=".global.AuthenticationApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -20,6 +21,8 @@
         <activity android:name="com.epatient.mobile.activities.MainActivity">
         </activity>
         <activity android:name="com.epatient.mobile.activities.DeviceScanActivity">
+        </activity>
+        <activity android:name="com.epatient.mobile.activities.LoginActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
