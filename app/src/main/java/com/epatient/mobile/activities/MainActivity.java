@@ -20,11 +20,12 @@ import com.epatient.mobile.helpers.CustomBluetoothProfile;
 import com.epatient.mobile.helpers.HeartRateUtil;
 import com.epatient.mobile.model.HeartRateMeasurement;
 import com.epatient.mobile.service.PatientService;
-
-import net.danlew.android.joda.JodaTimeAndroid;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.joda.JodaModule;
 
 import org.joda.time.LocalDateTime;
 
+import java.io.IOException;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -38,7 +39,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.ResponseBody;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
-import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.converter.jackson.JacksonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -68,7 +69,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        JodaTimeAndroid.init(this);
 
         initializeObjects();
         initilaizeComponents();
@@ -89,16 +89,18 @@ public class MainActivity extends AppCompatActivity {
 
     private void initializeRetrofit() {
         AuthenticationApplication authApp = (AuthenticationApplication) getApplication();
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JodaModule());
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(authApp.getServerAddress())
-                .addConverterFactory(GsonConverterFactory.create())
+                .addConverterFactory(JacksonConverterFactory.create(mapper))
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .client(new OkHttpClient.Builder()
                         .retryOnConnectionFailure(false)
                         .build())
                 .build();
         patientService = retrofit.create(PatientService.class);
-        token = "Bearer " + authApp.getToken();
+        token = authApp.getToken();
     }
 
     void getBoundedDevice() {
@@ -241,6 +243,11 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onSuccess(ResponseBody responseBody) {
+                        try {
+                            System.out.println(responseBody.string());
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                         responseBody.close();
                     }
 
@@ -253,7 +260,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void handleError(Throwable e) {
-        System.out.println("error: "+ e);
         Toast.makeText(this, "Problem with Internet connection", Toast.LENGTH_LONG).show();
     }
 }

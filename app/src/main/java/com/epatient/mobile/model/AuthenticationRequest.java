@@ -1,13 +1,13 @@
 package com.epatient.mobile.model;
 
-import com.google.gson.annotations.Expose;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Data;
 
 @Data
 public class AuthenticationRequest {
-    @Expose
+    @JsonProperty
     private String username;
-    @Expose
+    @JsonProperty
     private String password;
 }

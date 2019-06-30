@@ -1,19 +1,19 @@
 package com.epatient.mobile.model;
 
-import com.google.gson.annotations.Expose;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Data;
 
 @Data
 public class AccountCreationRequest {
-    @Expose
+    @JsonProperty
     private String username;
-    @Expose
+    @JsonProperty
     private String password;
-    @Expose
+    @JsonProperty
     private String firstname;
-    @Expose
+    @JsonProperty
     private String lastname;
-    @Expose
+    @JsonProperty
     private int age;
 }

@@ -1,11 +1,11 @@
 package com.epatient.mobile.model;
 
-import com.google.gson.annotations.Expose;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Data;
 
 @Data
 public class AuthenticationResponse {
-    @Expose
+    @JsonProperty
     private String token;
 }

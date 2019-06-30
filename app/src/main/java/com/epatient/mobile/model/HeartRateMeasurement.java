@@ -1,6 +1,6 @@
 package com.epatient.mobile.model;
 
-import com.google.gson.annotations.Expose;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.joda.time.LocalDateTime;
 
@@ -8,8 +8,8 @@ import lombok.Data;
 
 @Data
 public class HeartRateMeasurement {
-    @Expose
+    @JsonProperty
     private int heartRate;
-    @Expose
+    @JsonProperty
     private LocalDateTime timestamp;
 }
